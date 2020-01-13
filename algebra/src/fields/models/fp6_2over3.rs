@@ -1,5 +1,8 @@
-use rand::{Rng, distributions::{Standard, Distribution}};
 use crate::UniformRand;
+use rand::{
+    distributions::{Distribution, Standard},
+    Rng,
+};
 use std::{
     cmp::Ordering,
     io::{Read, Result as IoResult, Write},
@@ -38,8 +41,8 @@ pub trait Fp6Parameters: 'static + Send + Sync {
     Eq(bound = "P: Fp6Parameters")
 )]
 pub struct Fp6<P: Fp6Parameters> {
-    pub c0: Fp3<P::Fp3Params>,
-    pub c1: Fp3<P::Fp3Params>,
+    pub c0:          Fp3<P::Fp3Params>,
+    pub c1:          Fp3<P::Fp3Params>,
     #[derivative(Debug = "ignore")]
     #[doc(hidden)]
     pub _parameters: PhantomData<P>,
@@ -285,6 +288,16 @@ impl<P: Fp6Parameters> Distribution<Fp6<P>> for Standard {
     }
 }
 
+impl<P: Fp6Parameters> Add<Fp6<P>> for Fp6<P> {
+    type Output = Self;
+
+    #[inline]
+    fn add(self, other: Self) -> Self {
+        let mut result = self;
+        result.add_assign(&other);
+        result
+    }
+}
 
 impl<'a, P: Fp6Parameters> Add<&'a Fp6<P>> for Fp6<P> {
     type Output = Self;
@@ -304,6 +317,17 @@ impl<'a, P: Fp6Parameters> Sub<&'a Fp6<P>> for Fp6<P> {
     fn sub(self, other: &Self) -> Self {
         let mut result = self;
         result.sub_assign(&other);
+        result
+    }
+}
+
+impl<P: Fp6Parameters> Mul<Fp6<P>> for Fp6<P> {
+    type Output = Self;
+
+    #[inline]
+    fn mul(self, other: Self) -> Self {
+        let mut result = self;
+        result.mul_assign(&other);
         result
     }
 }
