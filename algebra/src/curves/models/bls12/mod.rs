@@ -10,6 +10,7 @@ use crate::{
         BitIterator, Field, Fp2, PrimeField, SquareRootField,
     },
 };
+use num_traits::One;
 
 use std::marker::PhantomData;
 
@@ -157,7 +158,8 @@ where
         let mut f1 = *f;
         f1.frobenius_map(6);
 
-        f.inverse().and_then(|mut f2| { {
+        f.inverse().and_then(|mut f2| {
+            {
                 // f2 = f^(-1);
                 // r = f^(p^6 - 1)
                 let mut r = f1 * &f2;
@@ -200,6 +202,7 @@ where
                 y5 *= &y4;
                 y5 *= &y1;
                 Some(y5)
-            } })
+            }
+        })
     }
 }

@@ -5,6 +5,7 @@ use algebra::{
     },
     BitIterator, Field,
 };
+use num_traits::{One, Zero};
 
 use r1cs_core::{ConstraintSystem, SynthesisError};
 
@@ -27,8 +28,8 @@ pub struct MontgomeryAffineGadget<
     ConstraintF: Field,
     F: FieldGadget<P::BaseField, ConstraintF>,
 > {
-    pub x: F,
-    pub y: F,
+    pub x:   F,
+    pub y:   F,
     #[derivative(Debug = "ignore")]
     _params: PhantomData<P>,
     #[derivative(Debug = "ignore")]
@@ -38,7 +39,7 @@ pub struct MontgomeryAffineGadget<
 mod montgomery_affine_impl {
     use super::*;
     use crate::Assignment;
-    use algebra::{twisted_edwards_extended::GroupAffine, AffineCurve, Field};
+    use algebra::{twisted_edwards_extended::GroupAffine, Field};
     use std::ops::{AddAssign, MulAssign, SubAssign};
 
     impl<P: TEModelParameters, ConstraintF: Field, F: FieldGadget<P::BaseField, ConstraintF>>
@@ -199,8 +200,8 @@ pub struct AffineGadget<
     ConstraintF: Field,
     F: FieldGadget<P::BaseField, ConstraintF>,
 > {
-    pub x: F,
-    pub y: F,
+    pub x:   F,
+    pub y:   F,
     #[derivative(Debug = "ignore")]
     _params: PhantomData<P>,
     #[derivative(Debug = "ignore")]

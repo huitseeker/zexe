@@ -1,7 +1,8 @@
-use ff_fft::EvaluationDomain;
 use algebra::{Field, PairingEngine};
+use ff_fft::EvaluationDomain;
 
 use crate::{generator::KeypairAssembly, prover::ProvingAssignment};
+use num_traits::{One, Zero};
 use r1cs_core::{Index, SynthesisError};
 
 use rayon::prelude::*;
@@ -227,14 +228,16 @@ impl R1CStoSAP {
             tmp.double_in_place();
 
             let assignment = full_input_assignment[extra_var_offset2 + i];
-            c[extra_constr_offset + 2 * i - 1] = tmp + &assignment;
+            c[extra_constr_offset + 2 * i - 1] = tmp + assignment;
             c[extra_constr_offset + 2 * i] = assignment;
         }
 
         domain.ifft_in_place(&mut c);
         domain.coset_fft_in_place(&mut c);
 
-        aa.par_iter_mut().zip(c).for_each(|(aa_i, c_i)| *aa_i -= &c_i);
+        aa.par_iter_mut()
+            .zip(c)
+            .for_each(|(aa_i, c_i)| *aa_i -= &c_i);
 
         domain.divide_by_vanishing_poly_on_coset_in_place(&mut aa);
         domain.coset_ifft_in_place(&mut aa);

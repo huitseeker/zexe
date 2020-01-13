@@ -5,6 +5,7 @@ use algebra::{
     },
     AffineCurve, BitIterator, Field, PrimeField, ProjectiveCurve,
 };
+use num_traits::{One, Zero};
 use r1cs_core::{ConstraintSystem, SynthesisError};
 use std::{borrow::Borrow, marker::PhantomData, ops::Neg};
 
@@ -20,11 +21,11 @@ pub struct AffineGadget<
     ConstraintF: Field,
     F: FieldGadget<P::BaseField, ConstraintF>,
 > {
-    pub x:   F,
-    pub y:   F,
+    pub x:        F,
+    pub y:        F,
     pub infinity: Boolean,
-    _params: PhantomData<P>,
-    _engine: PhantomData<ConstraintF>,
+    _params:      PhantomData<P>,
+    _engine:      PhantomData<ConstraintF>,
 }
 
 impl<P: SWModelParameters, ConstraintF: Field, F: FieldGadget<P::BaseField, ConstraintF>>
@@ -98,7 +99,11 @@ where
 
     #[inline]
     fn get_value(&self) -> Option<Self::Value> {
-        match (self.x.get_value(), self.y.get_value(), self.infinity.get_value()) {
+        match (
+            self.x.get_value(),
+            self.y.get_value(),
+            self.infinity.get_value(),
+        ) {
             (Some(x), Some(y), Some(infinity)) => {
                 Some(SWAffine::new(x, y, infinity).into_projective())
             },
@@ -340,14 +345,19 @@ where
     ) -> Result<Self, SynthesisError> {
         let x = F::conditionally_select(&mut cs.ns(|| "x"), cond, &first.x, &second.x)?;
         let y = F::conditionally_select(&mut cs.ns(|| "y"), cond, &first.y, &second.y)?;
-        let infinity = Boolean::conditionally_select(&mut cs.ns(|| "infinity"), cond, &first.infinity, &second.infinity)?;
+        let infinity = Boolean::conditionally_select(
+            &mut cs.ns(|| "infinity"),
+            cond,
+            &first.infinity,
+            &second.infinity,
+        )?;
 
         Ok(Self::new(x, y, infinity))
     }
 
     fn cost() -> usize {
-        2 * <F as CondSelectGadget<ConstraintF>>::cost() +
-        <Boolean as CondSelectGadget<ConstraintF>>::cost()
+        2 * <F as CondSelectGadget<ConstraintF>>::cost()
+            + <Boolean as CondSelectGadget<ConstraintF>>::cost()
     }
 }
 
@@ -557,7 +567,7 @@ where
         FN: FnOnce() -> Result<T, SynthesisError>,
         T: Borrow<SWProjective<P>>,
     {
-        // When allocating the input we assume that the verifier has performed 
+        // When allocating the input we assume that the verifier has performed
         // any on curve checks already.
         let (x, y, infinity) = match value_gen() {
             Ok(ge) => {

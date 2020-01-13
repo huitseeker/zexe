@@ -1,8 +1,9 @@
-use crate::{fields::Field, TEModelParameters, MontgomeryModelParameters};
+use crate::{fields::Field, MontgomeryModelParameters, TEModelParameters};
+use num_traits::One;
 
 pub(crate) fn montgomery_conversion_test<P>()
-    where
-        P: TEModelParameters,
+where
+    P: TEModelParameters,
 {
     // A = 2 * (a + d) / (a - d)
     let a = P::BaseField::one().double()*&(P::COEFF_A + &P::COEFF_D)*&(P::COEFF_A - &P::COEFF_D).inverse().unwrap();

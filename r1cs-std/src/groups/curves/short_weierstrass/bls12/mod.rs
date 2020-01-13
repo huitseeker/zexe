@@ -1,8 +1,8 @@
 use algebra::{
     curves::bls12::{Bls12Parameters, G1Prepared, TwistType},
-    fields::Field,
-    BitIterator, ProjectiveCurve,
+    BitIterator, Field, ProjectiveCurve,
 };
+use num_traits::One;
 use r1cs_core::{ConstraintSystem, SynthesisError};
 
 use crate::{

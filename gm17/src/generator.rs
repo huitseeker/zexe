@@ -1,15 +1,16 @@
-use ff_fft::EvaluationDomain;
 use algebra::{
-    msm::FixedBaseMSM, UniformRand,
-    AffineCurve, Field, PairingEngine, PrimeField, ProjectiveCurve,
+    msm::FixedBaseMSM, AffineCurve, Field, PairingEngine, PrimeField, ProjectiveCurve, UniformRand,
 };
+use ff_fft::EvaluationDomain;
 
+use num_traits::{One, Zero};
+use r1cs_core::{
+    ConstraintSynthesizer, ConstraintSystem, Index, LinearCombination, SynthesisError, Variable,
+};
 use rand::Rng;
 use rayon::prelude::*;
-use r1cs_core::{ConstraintSynthesizer, ConstraintSystem, Index, LinearCombination, SynthesisError, Variable};
 
-use crate::{Parameters, VerifyingKey, r1cs_to_sap::R1CStoSAP};
-
+use crate::{r1cs_to_sap::R1CStoSAP, Parameters, VerifyingKey};
 
 /// Generates a random common reference string for
 /// a circuit.
@@ -297,8 +298,6 @@ where
         &a,
     );
     end_timer!(b_time);
-
-
 
     end_timer!(proving_key_time);
 

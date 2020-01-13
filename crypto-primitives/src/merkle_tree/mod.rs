@@ -200,7 +200,7 @@ impl<P: MerkleTreeConfig> MerkleHashTree<P> {
 
         // Check that the given index corresponds to the correct leaf.
         if leaf_hash != self.tree[tree_index] {
-            return Err(MerkleTreeError::IncorrectLeafIndex(tree_index).into())
+            return Err(MerkleTreeError::IncorrectLeafIndex(tree_index).into());
         }
 
         // Iterate from the leaf up to the root, storing all intermediate hash values.
@@ -230,7 +230,7 @@ impl<P: MerkleTreeConfig> MerkleHashTree<P> {
         }
         end_timer!(prove_time);
         if path.len() != (Self::HEIGHT - 1) as usize {
-            return Err(MerkleTreeError::IncorrectPathLength(path.len()).into())
+            return Err(MerkleTreeError::IncorrectPathLength(path.len()).into());
         } else {
             Ok(MerkleTreePath { path })
         }
@@ -372,6 +372,7 @@ mod test {
         merkle_tree::*,
     };
     use algebra::curves::jubjub::JubJubAffine as JubJub;
+    use num_traits::Zero;
     use rand::SeedableRng;
     use rand_xorshift::XorShiftRng;
 
@@ -419,7 +420,6 @@ mod test {
     }
 
     fn bad_merkle_tree_verify<L: ToBytes + Clone + Eq>(leaves: &[L]) -> () {
-        use algebra::groups::Group;
         let mut rng = XorShiftRng::seed_from_u64(13423423u64);
 
         let crh_parameters = Rc::new(H::setup(&mut rng).unwrap());

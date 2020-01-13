@@ -3,6 +3,7 @@ use crate::{
     bytes::{FromBytes, ToBytes},
     UniformRand,
 };
+use num_traits::{One, Zero};
 use std::{
     fmt::{Debug, Display},
     hash::Hash,
@@ -30,22 +31,22 @@ pub use self::models::*;
 macro_rules! field_new {
     ($name:ident, $c0:expr) => {
         $name {
-            0: $c0, 
-            1: std::marker::PhantomData
+            0: $c0,
+            1: std::marker::PhantomData,
         }
     };
     ($name:ident, $c0:expr, $c1:expr $(,)?) => {
         $name {
-            c0: $c0,
-            c1: $c1,
+            c0:          $c0,
+            c1:          $c1,
             _parameters: std::marker::PhantomData,
         }
     };
     ($name:ident, $c0:expr, $c1:expr, $c2:expr $(,)?) => {
         $name {
-            c0: $c0,
-            c1: $c1,
-            c2: $c2,
+            c0:          $c0,
+            c1:          $c1,
+            c2:          $c2,
             _parameters: std::marker::PhantomData,
         }
     };
@@ -64,9 +65,11 @@ pub trait Field:
     + Sync
     + 'static
     + Eq
+    + One
     + Ord
     + Neg<Output = Self>
     + UniformRand
+    + Zero
     + Sized
     + Hash
     + From<u128>
@@ -75,26 +78,16 @@ pub trait Field:
     + From<u16>
     + From<u8>
     + for<'a> Add<&'a Self, Output = Self>
+    + Add<Self, Output = Self>
     + for<'a> Sub<&'a Self, Output = Self>
     + for<'a> Mul<&'a Self, Output = Self>
+    + Mul<Self, Output = Self>
     + for<'a> Div<&'a Self, Output = Self>
     + for<'a> AddAssign<&'a Self>
     + for<'a> SubAssign<&'a Self>
     + for<'a> MulAssign<&'a Self>
     + for<'a> DivAssign<&'a Self>
 {
-    /// Returns the zero element of the field, the additive identity.
-    fn zero() -> Self;
-
-    /// Returns true if and only if `self == Self::zero()`.
-    fn is_zero(&self) -> bool;
-
-    /// Returns the one element of the field, a field generator.
-    fn one() -> Self;
-
-    /// Returns true if and only if `self == Self::one()`.
-    fn is_one(&self) -> bool;
-
     /// Returns the characteristic of the field.
     fn characteristic<'a>() -> &'a [u64];
 

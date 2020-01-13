@@ -7,6 +7,7 @@ use crate::{
     fields::mnt6::fr::Fr,
     groups::tests::group_test,
 };
+use num_traits::One;
 use rand;
 
 #[test]
@@ -76,8 +77,10 @@ fn test_bilinearity() {
 
 #[test]
 fn test_product_of_pairings() {
-    use crate::curves::{ProjectiveCurve, PairingCurve};
-    use crate::UniformRand;
+    use crate::{
+        curves::{PairingCurve, ProjectiveCurve},
+        UniformRand,
+    };
     let rng = &mut rand::thread_rng();
 
     let a = G1Projective::rand(rng).into_affine();

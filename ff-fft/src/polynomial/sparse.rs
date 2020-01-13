@@ -2,9 +2,8 @@
 
 use std::fmt;
 
+use crate::{DenseOrSparsePolynomial, DensePolynomial, EvaluationDomain, Evaluations};
 use algebra::{Field, PrimeField};
-use crate::DensePolynomial;
-use crate::{DenseOrSparsePolynomial, EvaluationDomain, Evaluations};
 
 /// Stores a sparse polynomial in coefficient form.
 #[derive(Clone, PartialEq, Eq, Hash, Default)]
@@ -51,7 +50,8 @@ impl<F: Field> SparsePolynomial<F> {
         while coeffs.last().map_or(false, |(_, c)| c.is_zero()) {
             coeffs.pop();
         }
-        // Check that either the coefficients vec is empty or that the last coeff is non-zero.
+        // Check that either the coefficients vec is empty or that the last coeff is
+        // non-zero.
         assert!(coeffs.last().map_or(true, |(_, c)| !c.is_zero()));
 
         Self { coeffs }
@@ -98,20 +98,21 @@ impl<F: Field> SparsePolynomial<F> {
     }
 }
 
-
 impl<F: PrimeField> SparsePolynomial<F> {
     /// Evaluate `self` over `domain`.
     pub fn evaluate_over_domain_by_ref(&self, domain: EvaluationDomain<F>) -> Evaluations<F> {
         let poly: DenseOrSparsePolynomial<'_, F> = self.into();
         DenseOrSparsePolynomial::<F>::evaluate_over_domain(poly, domain)
-        // unimplemented!("current implementation does not produce evals in correct order")
+        // unimplemented!("current implementation does not produce evals in
+        // correct order")
     }
 
     /// Evaluate `self` over `domain`.
     pub fn evaluate_over_domain(self, domain: EvaluationDomain<F>) -> Evaluations<F> {
         let poly: DenseOrSparsePolynomial<'_, F> = self.into();
         DenseOrSparsePolynomial::<F>::evaluate_over_domain(poly, domain)
-        // unimplemented!("current implementation does not produce evals in correct order")
+        // unimplemented!("current implementation does not produce evals in
+        // correct order")
     }
 }
 
@@ -127,9 +128,9 @@ impl<F: Field> Into<DensePolynomial<F>> for SparsePolynomial<F> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{EvaluationDomain, DensePolynomial, SparsePolynomial};
+    use crate::{DensePolynomial, EvaluationDomain, SparsePolynomial};
     use algebra::fields::bls12_381::fr::Fr;
-    use algebra::Field;
+    use num_traits::One;
 
     #[test]
     fn evaluate_over_domain() {

@@ -1,11 +1,9 @@
 //! Work with sparse and dense polynomials.
 
+use crate::{EvaluationDomain, Evaluations};
 use algebra::{Field, PrimeField};
-use std::borrow::Cow;
-use std::convert::TryInto;
+use std::{borrow::Cow, convert::TryInto};
 use DenseOrSparsePolynomial::*;
-use crate::{Evaluations, EvaluationDomain};
-
 
 mod dense;
 mod sparse;
@@ -34,7 +32,6 @@ impl<'a, F: 'a + Field> From<&'a DensePolynomial<F>> for DenseOrSparsePolynomial
     }
 }
 
-
 impl<F: Field> From<SparsePolynomial<F>> for DenseOrSparsePolynomial<'_, F> {
     fn from(other: SparsePolynomial<F>) -> Self {
         SPolynomial(Cow::Owned(other))
@@ -46,7 +43,6 @@ impl<'a, F: Field> From<&'a SparsePolynomial<F>> for DenseOrSparsePolynomial<'a,
         SPolynomial(Cow::Borrowed(other))
     }
 }
-
 
 impl<F: Field> Into<DensePolynomial<F>> for DenseOrSparsePolynomial<'_, F> {
     fn into(self) -> DensePolynomial<F> {
@@ -63,7 +59,7 @@ impl<F: Field> TryInto<SparsePolynomial<F>> for DenseOrSparsePolynomial<'_, F> {
     fn try_into(self) -> Result<SparsePolynomial<F>, ()> {
         match self {
             SPolynomial(p) => Ok(p.into_owned()),
-            _ => Err(())
+            _ => Err(()),
         }
     }
 }
@@ -101,8 +97,12 @@ impl<F: Field> DenseOrSparsePolynomial<'_, F> {
         }
     }
 
-    /// Divide self by another (sparse or dense) polynomial, and returns the quotient and remainder.
-    pub fn divide_with_q_and_r(&self, divisor: &Self) -> Option<(DensePolynomial<F>, DensePolynomial<F>)> {
+    /// Divide self by another (sparse or dense) polynomial, and returns the
+    /// quotient and remainder.
+    pub fn divide_with_q_and_r(
+        &self,
+        divisor: &Self,
+    ) -> Option<(DensePolynomial<F>, DensePolynomial<F>)> {
         if self.is_zero() {
             Some((DensePolynomial::zero(), DensePolynomial::zero()))
         } else if divisor.is_zero() {
@@ -132,11 +132,11 @@ impl<F: Field> DenseOrSparsePolynomial<'_, F> {
     }
 }
 impl<F: PrimeField> DenseOrSparsePolynomial<'_, F> {
-
-    /// Construct `Evaluations` by evaluating a polynomial over the domain `domain`.
+    /// Construct `Evaluations` by evaluating a polynomial over the domain
+    /// `domain`.
     pub fn evaluate_over_domain(
         poly: impl Into<Self>,
-        domain: EvaluationDomain<F>
+        domain: EvaluationDomain<F>,
     ) -> Evaluations<F> {
         let poly = poly.into();
         poly.eval_over_domain_helper(domain)
@@ -147,19 +147,18 @@ impl<F: PrimeField> DenseOrSparsePolynomial<'_, F> {
             SPolynomial(Cow::Borrowed(s)) => {
                 let evals = domain.elements().map(|elem| s.evaluate(elem)).collect();
                 Evaluations::from_vec_and_domain(evals, domain)
-            }
+            },
             SPolynomial(Cow::Owned(s)) => {
                 let evals = domain.elements().map(|elem| s.evaluate(elem)).collect();
                 Evaluations::from_vec_and_domain(evals, domain)
-            }
+            },
             DPolynomial(Cow::Borrowed(d)) => {
                 Evaluations::from_vec_and_domain(domain.fft(&d.coeffs), domain)
-            }
+            },
             DPolynomial(Cow::Owned(mut d)) => {
                 domain.fft_in_place(&mut d.coeffs);
                 Evaluations::from_vec_and_domain(d.coeffs, domain)
-            }
+            },
         }
-
     }
 }

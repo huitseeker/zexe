@@ -2,8 +2,9 @@ use crate::{
     bytes::{FromBytes, ToBytes},
     fields::{Field, PrimeField, SquareRootField},
     groups::Group,
+    UniformRand,
 };
-use crate::UniformRand;
+use num_traits::Zero;
 use std::{
     fmt::{Debug, Display},
     hash::Hash,
@@ -29,33 +30,21 @@ pub trait PairingEngine: Sized + 'static + Copy + Debug + Sync + Send {
     type Fr: PrimeField + SquareRootField + Into<<Self::Fr as PrimeField>::BigInt>;
 
     /// The projective representation of an element in G1.
-    type G1Projective: ProjectiveCurve<
-            BaseField = Self::Fq,
-            ScalarField = Self::Fr,
-            Affine = Self::G1Affine,
-        > + From<Self::G1Affine>;
+    type G1Projective: ProjectiveCurve<BaseField = Self::Fq, ScalarField = Self::Fr, Affine = Self::G1Affine>
+        + From<Self::G1Affine>;
 
     /// The affine representation of an element in G1.
-    type G1Affine: AffineCurve<
-            BaseField = Self::Fq,
-            ScalarField = Self::Fr,
-            Projective = Self::G1Projective,
-        > + PairingCurve<PairWith = Self::G2Affine, PairingResult = Self::Fqk>
+    type G1Affine: AffineCurve<BaseField = Self::Fq, ScalarField = Self::Fr, Projective = Self::G1Projective>
+        + PairingCurve<PairWith = Self::G2Affine, PairingResult = Self::Fqk>
         + From<Self::G1Projective>;
 
     /// The projective representation of an element in G2.
-    type G2Projective: ProjectiveCurve<
-            BaseField = Self::Fqe,
-            ScalarField = Self::Fr,
-            Affine = Self::G2Affine,
-        > + From<Self::G2Affine>;
+    type G2Projective: ProjectiveCurve<BaseField = Self::Fqe, ScalarField = Self::Fr, Affine = Self::G2Affine>
+        + From<Self::G2Affine>;
 
     /// The affine representation of an element in G2.
-    type G2Affine: AffineCurve<
-            BaseField = Self::Fqe,
-            ScalarField = Self::Fr,
-            Projective = Self::G2Projective,
-        > + PairingCurve<PairWith = Self::G1Affine, PairingResult = Self::Fqk>
+    type G2Affine: AffineCurve<BaseField = Self::Fqe, ScalarField = Self::Fr, Projective = Self::G2Projective>
+        + PairingCurve<PairWith = Self::G1Affine, PairingResult = Self::Fqk>
         + From<Self::G2Projective>;
 
     /// The base field that hosts G1.
@@ -126,9 +115,11 @@ pub trait ProjectiveCurve:
     + Debug
     + Display
     + UniformRand
+    + Zero
     + 'static
     + Neg<Output = Self>
     + for<'a> Add<&'a Self, Output = Self>
+    + Add<Self, Output = Self>
     + for<'a> Sub<&'a Self, Output = Self>
     + for<'a> AddAssign<&'a Self>
     + for<'a> SubAssign<&'a Self>
@@ -137,17 +128,9 @@ pub trait ProjectiveCurve:
     type BaseField: Field;
     type Affine: AffineCurve<Projective = Self, ScalarField = Self::ScalarField>;
 
-    /// Returns the additive identity.
-    #[must_use]
-    fn zero() -> Self;
-
     /// Returns a fixed generator of unknown exponent.
     #[must_use]
     fn prime_subgroup_generator() -> Self;
-
-    /// Determines if this point is the point at infinity.
-    #[must_use]
-    fn is_zero(&self) -> bool;
 
     /// Normalizes a slice of projective elements so that
     /// conversion to affine is cheap.
@@ -205,6 +188,7 @@ pub trait AffineCurve:
     + Hash
     + Debug
     + Display
+    + Zero
     + Neg<Output = Self>
     + 'static
 {
@@ -212,18 +196,9 @@ pub trait AffineCurve:
     type BaseField: Field;
     type Projective: ProjectiveCurve<Affine = Self, ScalarField = Self::ScalarField>;
 
-    /// Returns the additive identity.
-    #[must_use]
-    fn zero() -> Self;
-
     /// Returns a fixed generator of unknown exponent.
     #[must_use]
     fn prime_subgroup_generator() -> Self;
-
-    /// Determines if this point represents the point at infinity; the
-    /// additive identity.
-    #[must_use]
-    fn is_zero(&self) -> bool;
 
     /// Performs scalar multiplication of this element with mixed addition.
     #[must_use]
@@ -261,15 +236,6 @@ pub trait PairingCurve: AffineCurve {
 
 impl<C: ProjectiveCurve> Group for C {
     type ScalarField = C::ScalarField;
-    #[must_use]
-    fn zero() -> Self {
-        <C as ProjectiveCurve>::zero()
-    }
-
-    #[must_use]
-    fn is_zero(&self) -> bool {
-        <C as ProjectiveCurve>::is_zero(&self)
-    }
 
     #[inline]
     #[must_use]
